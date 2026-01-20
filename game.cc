@@ -4,6 +4,8 @@
 
 using namespace std;
 
+const int MAX_PIPS = 63;  // max amout of pips in hand
+
 ostream& operator<<(ostream& os, const Domino& d) {
     os << "Domino: " << d.top << " " << d.bottom;
     os << (d.sideways ? " sideways" : "");
@@ -195,7 +197,7 @@ void DominoGame::playFirstDomino() {
 
 void DominoGame::findWinner() {
     cout << "Game Over:" << endl;
-    int minPips = players[0].countPips();
+    int minPips = MAX_PIPS;
     int winnerIndex = 0;
     if (players[lastPlayerIndex].hand.length <= 0) {
         winnerIndex = lastPlayerIndex;
