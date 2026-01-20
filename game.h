@@ -94,6 +94,7 @@ class DominoGame {
 
     public:
     int gameWinner;
+    int isTie;
     DominoBoard* board;
     int lastPlayerIndex;
     int numPassesInRow;
@@ -119,6 +120,7 @@ class DominoGame {
     DominoGame(DominoBoard* board, DominoPlayer* players, int numPlayers):
         numStartDominoes{7},
         gameWinner{0},
+        isTie{false},
         board{board},
         lastPlayerIndex{0},
         numPassesInRow{0},

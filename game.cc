@@ -207,11 +207,20 @@ void DominoGame::findWinner() {
             if (numPips < minPips) {
                 minPips = numPips;
                 winnerIndex = i;
+                isTie = false;
+            }
+            else if (numPips == minPips) {
+                isTie = true;
             }
         }
     }
-    gameWinner = winnerIndex;
-    cout << players[winnerIndex].name << " has won the game!" << endl;
+    if (isTie) {
+        isTie = true;
+        cout << "There is a tie. This round will not count." << endl;
+    } else {
+        gameWinner = winnerIndex;
+        cout << players[winnerIndex].name << " has won the game!" << endl;
+    }
 }
 
 void DominoGame::autoPlayGame() {
@@ -296,6 +305,11 @@ void DominoRound::regularPlayRounds(int numPlayers) {
         cin >> playAgain;
         if (!playAgain) break;
         game->regularGame();
+        if (game->isTie) {
+            --i;
+            delete game;
+            continue;
+        }
         ++score[game->gameWinner];
         delete game;
     }
