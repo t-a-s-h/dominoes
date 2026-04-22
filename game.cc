@@ -26,19 +26,6 @@ void DominoBoard::clear() {
   length = 0;
 }
 
-ostream& operator<<(ostream& os, const DominoGame& g) {
-    os << "Domino set:" << endl;
-    for (int i = 0; i < g.dominoSetLength; ++i) {
-        os << g.dominoSet[i] << endl;
-    }
-
-    for (int i = 0; i < g.numPlayers; ++i) {
-        DominoPlayer& p = g.players[i];
-        os << p << endl;
-    }
-    return os;
-}
-
 Domino& DominoArray::operator[](int i) {
     if (i >= length) throw invalid_argument("array index out of bounds");
     else {
@@ -62,14 +49,16 @@ Domino* DominoGame::createDominoes(int upToDouble) {
 };
 
 PlayPosition& operator++ (PlayPosition& p) {
-  (p == none) ? p =  back : p = both;
+  (p == none) ? p = back : p = both;
   return p;
 }
 
-DominoBoard* board = new DominoBoard;
+// creates "hands" for all players
+// adds pointers for "random" dominoes directly to each player's hand
+// occurs "above" players (in Domino Game)
+// player cannot create their own hand
 
 void DominoGame::makeHands() {
-    srand(time(0));
     for (int i = 0; i < numPlayers; ++i) {
         players[i].hand.length = numStartDominoes;
         for (int j = numStartDominoes - 1; j >= 0; --j) {
@@ -137,7 +126,6 @@ bool DominoPlayer::play(DominoBoard* board, Domino* domino, bool autoPlay = fals
         printMove(back,&hand[hand.length - 1]);
     }
     --hand.length;
-    // delete domino;
     return true;
 }
 
@@ -198,7 +186,7 @@ void DominoGame::playFirstDomino() {
 void DominoGame::findWinner() {
     cout << "Game Over:" << endl;
     int minPips = MAX_PIPS;
-    int winnerIndex = 0;
+    int winnerIndex = -1;
     if (players[lastPlayerIndex].hand.length <= 0) {
         winnerIndex = lastPlayerIndex;
     } else {
@@ -217,9 +205,9 @@ void DominoGame::findWinner() {
         }
     }
     if (isTie) {
-        isTie = true;
         cout << "There is a tie. This round will not count." << endl;
     } else {
+        cout << "winnerIndex " << winnerIndex << endl;
         gameWinner = winnerIndex;
         cout << players[winnerIndex].name << " has won the game!" << endl;
     }
@@ -227,9 +215,7 @@ void DominoGame::findWinner() {
 
 void DominoGame::autoPlayGame() {
     bool gameOver = false;
-    srand(time(0));
     makeHands();
-    srand(time(0));
     playFirstDomino();
     while (!gameOver) {
         cout << "Current Board:" << endl;
@@ -250,47 +236,61 @@ void DominoRound::autoPlayRounds(int numPlayers) {
         ++score[game->gameWinner];
         delete game;
     }
-    int overallWinnerIndex = 0;
+      int* overallWinners = new int[numPlayers];
+    int numWinners = 0;
     int winningScore = 0;
     for (int i = 0; i < numPlayers; ++i) {
-        cout << players[i].name << "'s' score: " << score[i] << endl;
+        cout << players[i].name << "'s score: " << score[i] << endl;
         if (score[i] > winningScore) {
             winningScore = score[i];
-            overallWinnerIndex = i;
+            numWinners = 1;
+            overallWinners[numWinners - 1] = i;
+        }
+        else if (score[i] == winningScore) {
+            overallWinners[numWinners] = i;
+            ++numWinners;
         }
     }
-    cout << players[overallWinnerIndex].name << " has won the tournament winning " << winningScore << " games" << endl;
+    if (numWinners == 1) {
+        cout << players[overallWinners[0]].name << " has won the tournament winning " << winningScore << " game" << (winningScore > 1 ? "s." : "." ) << endl;
+    }
+    else {
+        for (int i = 0; i < numWinners - 1; ++i) {
+            cout << (i > 0 ? ", " : "") << players[overallWinners[i]].name;
+        }
+        cout << " and " << players[overallWinners[numWinners - 1]].name << " have tied winning " << winningScore << " game" << (winningScore > 1 ? "s" : "" ) << " each." << endl;
+    }
 }
 
-void DominoGame::regularGame() {
+void DominoGame::regularGame(int lastWinnerIndex) {
     bool gameOver = false;
-    srand(time(0));
+    bool isFirstRound = lastWinnerIndex == -1;
     makeHands();
-    srand(time(0));
-    playFirstDomino();
+    if (isFirstRound) playFirstDomino();
+    else lastPlayerIndex = lastWinnerIndex - 1;
     while (!gameOver) {
         lastPlayerIndex = (lastPlayerIndex + 1) % numPlayers;
         DominoPlayer& player = players[lastPlayerIndex];
         cout << endl << player.name << "'s turn." << endl;
-        cout << "Top of board: " << (board->head->data->top) << ", bottom of board: " << (board->tail->data->bottom) << endl;
+        if (! board->head) cout << "Board is clear." << endl;
+        else cout << "Top of board: " << (board->head->data->top) << ", bottom of board: " << (board->tail->data->bottom) << endl;
         cout << player << player.hand.length << ": Pass" << endl << endl;
-        int dominoIndex;
+        int dominoIndex = -1;
         bool successfulPlay = false;
         while(!successfulPlay) {
             cout << "Please select a valid domino to play." << endl;
             cin >> dominoIndex;
-            if (dominoIndex < player.hand.length) {
-                successfulPlay = player.play(board,&player.hand[dominoIndex]);
-                if (successfulPlay) {
-                  numPassesInRow = 0;
-                  break;
-                }
-                cout << "That was not a valid play." << endl;
-                continue;
+            if (dominoIndex == -1) return;
+            if (dominoIndex >= player.hand.length) {
+                player.pass();
+                ++numPassesInRow;
+                break;
             }
-            player.pass();
-            ++numPassesInRow;
-            successfulPlay = true;
+            successfulPlay = player.play(board,&player.hand[dominoIndex]);
+            if (successfulPlay) {
+                numPassesInRow = 0;
+            }
+            else cout << "That was not a valid play." << endl;
         }
         gameOver = player.hand.length == 0 || numPassesInRow >= numPlayers;
     }
@@ -306,23 +306,38 @@ void DominoRound::regularPlayRounds(int numPlayers) {
         int playAgain;
         cin >> playAgain;
         if (!playAgain) break;
-        game->regularGame();
+        game->regularGame(lastWinnerIndex);
         if (game->isTie) {
             --i;
             delete game;
             continue;
         }
+        lastWinnerIndex = game->gameWinner;
         ++score[game->gameWinner];
         delete game;
     }
-    int overallWinnerIndex = 0;
+    int* overallWinners = new int[numPlayers];
+    int numWinners = 0;
     int winningScore = 0;
     for (int i = 0; i < numPlayers; ++i) {
         cout << players[i].name << "'s score: " << score[i] << endl;
         if (score[i] > winningScore) {
             winningScore = score[i];
-            overallWinnerIndex = i;
+            numWinners = 1;
+            overallWinners[numWinners - 1] = i;
+        }
+        else if (score[i] == winningScore) {
+            overallWinners[numWinners] = i;
+            ++numWinners;
         }
     }
-    cout << players[overallWinnerIndex].name << " has won the tournament winning " << winningScore << " games" << endl;
+    if (numWinners == 1) {
+        cout << players[overallWinners[0]].name << " has won the tournament winning " << winningScore << " game" << (winningScore > 1 ? "s." : "." ) << endl;
+    }
+    else {
+        for (int i = 0; i < numWinners - 1; ++i) {
+            cout << (i > 0 ? ", " : "") << players[overallWinners[i]].name;
+        }
+        cout << " and " << players[overallWinners[numWinners - 1]].name << " have tied winning " << winningScore << " game" << (winningScore > 1 ? "s" : "" ) << " each." << endl;
+    }
 }

@@ -78,9 +78,7 @@ struct DominoPlayer {
     friend ostream& operator<<(ostream& os, DominoPlayer& p);
 
     DominoPlayer(const int numStartDominoes = 7):
-        // board{board},
         lastPlayerIndex{0},
-        // numStartDominoes{this->numStartDominoes},
         hand{DominoArray(numStartDominoes)}{}
     };
 
@@ -105,7 +103,7 @@ class DominoGame {
     void makeHands();
     void autoPlayGame();
     void findWinner();
-    void regularGame();
+    void regularGame(int);
     void autoPlayRounds();
     void playFirstDomino();
     Domino* createDominoes(int);
@@ -119,7 +117,7 @@ class DominoGame {
 
     DominoGame(DominoBoard* board, DominoPlayer* players, int numPlayers):
         numStartDominoes{7},
-        gameWinner{0},
+        gameWinner{-1},
         isTie{false},
         board{board},
         lastPlayerIndex{0},
@@ -131,7 +129,7 @@ class DominoGame {
 
 struct DominoRound {
     DominoBoard* board;
-    int nextPlayerIndex;
+    int lastWinnerIndex;
     int numPlayers;
     int gameNum;
     DominoPlayer* players;
@@ -139,19 +137,18 @@ struct DominoRound {
     int roundIndex = 0;
     const int numGamesInSet = 7;
     void autoPlayRounds(int);
-    // DominoGame* games;
     int numPassesInRow;
     void regularPlayRounds(int);
 
     DominoRound(int numPlayers, DominoBoard* board):
         board{board},
+        lastWinnerIndex{-1},
         numPlayers{numPlayers},
         gameNum{0},
         players{new DominoPlayer[numPlayers]},
         score{new int[numPlayers]()}{
         cin.ignore();
         for (int i = 0; i < numPlayers; ++i) {
-            // players[i].board = board;
             players[i].index = i;
             string s;
             cout << "player " + to_string(i+1) << "'s name: ";

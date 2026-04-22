@@ -5,6 +5,7 @@
 using namespace std;
 
 int main(){
+    srand(time(nullptr));
     int numPlayers;
     cout << "How many players will be in this game? (2-4)" << endl;
     cin >> numPlayers;
