@@ -66,11 +66,9 @@ struct DominoPlayer {
     int index;
     string name;
     int lastPlayerIndex;
-    // const int numStartDominoes;
     DominoArray hand;
     bool autoPlay(DominoBoard*);
     int countPips();
-    // DominoBoard* board;
     bool play(DominoBoard*, Domino*, bool);
     void printMove(PlayPosition, Domino*);
     void pass();
@@ -139,6 +137,7 @@ struct DominoRound {
     void autoPlayRounds(int);
     int numPassesInRow;
     void regularPlayRounds(int);
+    void printWinner();
 
     DominoRound(int numPlayers, DominoBoard* board):
         board{board},

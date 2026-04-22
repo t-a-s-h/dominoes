@@ -207,7 +207,6 @@ void DominoGame::findWinner() {
     if (isTie) {
         cout << "There is a tie. This round will not count." << endl;
     } else {
-        cout << "winnerIndex " << winnerIndex << endl;
         gameWinner = winnerIndex;
         cout << players[winnerIndex].name << " has won the game!" << endl;
     }
@@ -228,15 +227,8 @@ void DominoGame::autoPlayGame() {
     findWinner();
 }
 
-void DominoRound::autoPlayRounds(int numPlayers) {
-    for (int i = 0; i < numGamesInSet; ++i) {
-        board->clear();
-        DominoGame* game = new DominoGame(board, players, numPlayers);
-        game->autoPlayGame();
-        ++score[game->gameWinner];
-        delete game;
-    }
-      int* overallWinners = new int[numPlayers];
+void DominoRound::printWinner() {
+    int* overallWinners = new int[numPlayers];
     int numWinners = 0;
     int winningScore = 0;
     for (int i = 0; i < numPlayers; ++i) {
@@ -260,6 +252,17 @@ void DominoRound::autoPlayRounds(int numPlayers) {
         }
         cout << " and " << players[overallWinners[numWinners - 1]].name << " have tied winning " << winningScore << " game" << (winningScore > 1 ? "s" : "" ) << " each." << endl;
     }
+}
+
+void DominoRound::autoPlayRounds(int numPlayers) {
+    for (int i = 0; i < numGamesInSet; ++i) {
+        board->clear();
+        DominoGame* game = new DominoGame(board, players, numPlayers);
+        game->autoPlayGame();
+        ++score[game->gameWinner];
+        delete game;
+    }
+    printWinner();
 }
 
 void DominoGame::regularGame(int lastWinnerIndex) {
@@ -316,28 +319,5 @@ void DominoRound::regularPlayRounds(int numPlayers) {
         ++score[game->gameWinner];
         delete game;
     }
-    int* overallWinners = new int[numPlayers];
-    int numWinners = 0;
-    int winningScore = 0;
-    for (int i = 0; i < numPlayers; ++i) {
-        cout << players[i].name << "'s score: " << score[i] << endl;
-        if (score[i] > winningScore) {
-            winningScore = score[i];
-            numWinners = 1;
-            overallWinners[numWinners - 1] = i;
-        }
-        else if (score[i] == winningScore) {
-            overallWinners[numWinners] = i;
-            ++numWinners;
-        }
-    }
-    if (numWinners == 1) {
-        cout << players[overallWinners[0]].name << " has won the tournament winning " << winningScore << " game" << (winningScore > 1 ? "s." : "." ) << endl;
-    }
-    else {
-        for (int i = 0; i < numWinners - 1; ++i) {
-            cout << (i > 0 ? ", " : "") << players[overallWinners[i]].name;
-        }
-        cout << " and " << players[overallWinners[numWinners - 1]].name << " have tied winning " << winningScore << " game" << (winningScore > 1 ? "s" : "" ) << " each." << endl;
-    }
+    printWinner();
 }
