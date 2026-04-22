@@ -16,7 +16,7 @@ C++.
 This game, in its current form, uses a command line interface and can be played with one terminal instance only.
 ## Future considerations
 ### Functional changes
-0. Fix non terminating loop on early exit error.
+0. ~~Fix non terminating loop on early exit error.~~ Done!
 1. Incorporate machine learning to build meaningfully competent opponent(s).
 	- Run the game with random plays (where more than one play could occur).
 	- Repeat game play several times and store results.
@@ -25,4 +25,4 @@ This game, in its current form, uses a command line interface and can be played 
 2. Maybe implement ability to play against someone using a different device.
 ### UI / UX improvements
 - Create some sort of UI as none currently exists for this game.
-	- Will likely recreate same game logic in TypeScript and style with CSS for presentation, keep C++ for training.
+	- Will likely use TypeScript for frontend.
