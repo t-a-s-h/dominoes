@@ -4,7 +4,9 @@ A simple command line game of double six dominoes.
 ## Tech
 C++.
 ## Run
-
+### Option 1
+- Run demo [here](https://www.onlinegdb.com/ikM0FmoZ4)
+### Option 2
 - Download [here](https://github.com/t-a-s-h/dominoes/archive/refs/heads/main.zip).
 - Unzip folder.
 - Navigate to unzipped folder in terminal.
